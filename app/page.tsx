@@ -1,65 +1,133 @@
-"use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+'use client';
+
+import Image from "next/image";
+import { useState, useEffect } from "react";
+import RetirementForm from "./RetirementForm";
+import MoreInfoForm from "./MoreInfoForm";
+import LoadingSpinner from "./LoadingSpinner";
+import ResultPage from "./ResultPage";
+import { calculateRetirementPlan, RetirementInputs, CalculationResult } from '../utils/calculateRetirement';
+
+// 입력 데이터 타입 정의 (초기값 설정용)
+interface FormData {
+  retirementAge: string;
+  monthlyPension: string;
+  currentAge: string;
+  savedMoney: string;
+}
 
 export default function Home() {
-  const [age, setAge] = useState("");
-  const [amount, setAmount] = useState("");
-  const router = useRouter();
+  const [step, setStep] = useState<'main' | 'retirement' | 'moreinfo' | 'loading' | 'result'>('main');
+  const [formData, setFormData] = useState<FormData>({
+    retirementAge: '',
+    monthlyPension: '',
+    currentAge: '',
+    savedMoney: '',
+  });
+  const [resultData, setResultData] = useState<CalculationResult | null>(null);
 
-  // 숫자만 입력되도록 처리
-  const handleAgeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9]/g, "");
-    setAge(value);
+  const handleInputChange = (formName: keyof FormData, value: string) => {
+    setFormData(prev => ({ ...prev, [formName]: value }));
   };
-  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9]/g, "");
-    setAmount(value);
+
+  const handleShowRetirementForm = () => setStep('retirement');
+  
+  const handleGoToMoreInfo = (retirementAge: string, monthlyPension: string) => {
+    setFormData(prev => ({ ...prev, retirementAge, monthlyPension }));
+    setStep('moreinfo');
   };
+
+  const handleGoToRetirementForm = () => setStep('retirement'); // MoreInfoForm에서 뒤로가기
+
+  const handleSubmitAndShowLoading = async (currentAge: string, savedMoney: string) => {
+    const finalData: RetirementInputs = {
+      retirementAge: Number(formData.retirementAge),
+      monthlyPension: Number(formData.monthlyPension),
+      currentAge: Number(currentAge),
+      savedMoney: Number(savedMoney),
+    };
+    setFormData(prev => ({ ...prev, currentAge, savedMoney }));
+    setStep('loading');
+    
+    try {
+      const result = await calculateRetirementPlan(finalData);
+      setResultData(result);
+      setStep('result');
+    } catch (error) {
+      console.error("계산 중 오류 발생:", error);
+      // TODO: 에러 처리 UI 추가 (예: 에러 페이지로 이동 또는 알림)
+      setStep('main'); // 오류 시 메인으로 이동 (임시)
+    }
+  };
+  
+  const handleRestart = () => {
+    setFormData({ retirementAge: '', monthlyPension: '', currentAge: '', savedMoney: '' });
+    setResultData(null);
+    setStep('main');
+  };
+
+  if (step === 'loading') {
+    return <LoadingSpinner />;
+  }
+  if (step === 'result' && resultData) {
+    return <ResultPage data={resultData} onRestart={handleRestart} />;
+  }
+  if (step === 'retirement') {
+    return <RetirementForm 
+      onNext={handleGoToMoreInfo} 
+      initialAge={formData.retirementAge}
+      initialPension={formData.monthlyPension}
+      onAgeChange={(val) => handleInputChange('retirementAge', val)}
+      onPensionChange={(val) => handleInputChange('monthlyPension', val)}
+    />;
+  }
+  if (step === 'moreinfo') {
+    return <MoreInfoForm 
+      onBack={handleGoToRetirementForm} 
+      onSubmit={handleSubmitAndShowLoading} 
+      initialCurrentAge={formData.currentAge}
+      initialSavedMoney={formData.savedMoney}
+      onCurrentAgeChange={(val) => handleInputChange('currentAge', val)}
+      onSavedMoneyChange={(val) => handleInputChange('savedMoney', val)}
+    />;
+  }
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-white">
-      <div className="flex-1 flex flex-col justify-start px-6 pt-12">
-        <h1 className="text-2xl font-bold mb-2">퇴직 후,</h1>
-        <h2 className="text-xl font-semibold mb-8">얼마 받고 싶으신가요?</h2>
-        <div className="mb-4">
-          <div className="flex items-center text-lg text-gray-500 mb-4">
-            <input
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength={3}
-              value={age}
-              onChange={handleAgeChange}
-              className="w-20 border-b-2 border-gray-300 text-center text-lg font-semibold focus:outline-none focus:border-black bg-transparent mr-2"
-              placeholder="나이"
-            />
-            세에 은퇴해서
-          </div>
-          <div className="flex items-center text-lg text-gray-500">
-            매달
-            <input
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength={10}
-              value={amount}
-              onChange={handleAmountChange}
-              className="w-32 border-b-2 border-gray-300 text-center text-lg font-semibold focus:outline-none focus:border-black bg-transparent mx-2"
-              placeholder="금액"
-            />
-            원 받고 싶어요
-          </div>
-        </div>
+    <div className="flex flex-col items-center justify-between min-h-screen bg-white text-black p-8">
+      <div className="flex-grow flex flex-col items-center justify-center text-center">
+        <h1 className="text-4xl font-bold mb-8">
+          퇴직 전까지
+          <br />
+          얼마 모아야 할까?
+        </h1>
+        <Image
+          src="/moneyImg.svg"
+          alt="퇴직 자금 고민 이미지"
+          width={200}
+          height={200}
+          className="mb-12"
+        />
       </div>
-      <div className="w-full py-2 bg-gray-800 fixed bottom-0 left-0 flex justify-center">
-        <button
-          className="w-full max-w-md text-lg font-semibold text-white py-3 rounded bg-gray-800 active:bg-gray-900 transition"
-          onClick={() => router.push("/detail")}
+      <button
+        onClick={handleShowRetirementForm}
+        className="w-full max-w-md bg-gray-800 text-white py-4 px-6 rounded-lg text-lg font-semibold flex items-center justify-center"
+      >
+        지금 알아보기
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+          stroke="currentColor"
+          className="w-6 h-6 ml-2"
         >
-          다음
-        </button>
-      </div>
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+          />
+        </svg>
+      </button>
     </div>
   );
 }
