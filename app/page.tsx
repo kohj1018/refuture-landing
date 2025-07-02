@@ -6,7 +6,7 @@ import RetirementForm from "./RetirementForm";
 import MoreInfoForm from "./MoreInfoForm";
 import LoadingSpinner from "./LoadingSpinner";
 import ResultPage from "./ResultPage";
-import { calculateRetirementPlan, RetirementInputs, CalculationResult } from '../utils/calculateRetirement';
+import { calculateRetirementPlan, RetirementInputs, ResultData } from '../utils/calculateRetirement';
 
 // 입력 데이터 타입 정의 (초기값 설정용)
 interface FormData {
@@ -24,7 +24,7 @@ export default function Home() {
     currentAge: '',
     savedMoney: '',
   });
-  const [resultData, setResultData] = useState<CalculationResult | null>(null);
+  const [resultData, setResultData] = useState<ResultData | null>(null);
 
   const handleInputChange = (formName: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [formName]: value }));
