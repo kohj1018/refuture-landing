@@ -103,9 +103,18 @@ const pensionChartOptions: any = {
 
 export default function ResultPage({ data, onRestart }: ResultPageProps) {
     const [isClient, setIsClient] = useState(false);
+    const [animatedWordIndex, setAnimatedWordIndex] = useState(0);
+
+    const animatedWords = ["자산 관리", "노후 준비", "결혼 준비", "목돈 마련", "내집 마련"];
 
     useEffect(() => {
         setIsClient(true);
+
+        const interval = setInterval(() => {
+            setAnimatedWordIndex((prevIndex) => (prevIndex + 1) % animatedWords.length);
+        }, 2000); // Change word every 3 seconds
+
+        return () => clearInterval(interval); // Cleanup on component unmount
     }, []);
 
     const progressPercentage = data.goalAmount > 0 ? (data.estimatedAmount / data.goalAmount) * 100 : 0;
@@ -125,8 +134,8 @@ export default function ResultPage({ data, onRestart }: ResultPageProps) {
                 {/* 1. 핵심 결론 카드 */}
                 <div className="bg-gray-50 rounded-2xl p-6 shadow-sm">
                     <h1 className="text-xl font-bold text-gray-800 text-center">
-                        아쉽지만, 목표까지<br />
-                        <span className="text-red-500">약 {formatMoney(data.shortfallAmount)}</span>이 부족해요.
+                        원하는 노후 생활을 위해서,<br />
+                        약 <span className="text-red-500">{formatMoney(data.shortfallAmount)}</span> 더 모아야 해요.
                     </h1>
                     <p className="text-sm text-gray-600 mt-2 text-center">{data.retirementAge}세 은퇴 목표</p>
 
@@ -145,7 +154,7 @@ export default function ResultPage({ data, onRestart }: ResultPageProps) {
                 {isClient && (
                     <>
                         <div className="mt-12">
-                            <h2 className="text-xl font-bold text-gray-800">우리는 버는 시간보다<br/>써야 할 시간이 더 깁니다.</h2>
+                            <h2 className="text-xl font-bold text-gray-800">버는 시간보다<br/>써야 할 시간이 더 깁니다.</h2>
                             <div className="mt-5 bg-gray-50 rounded-lg p-5">
                                 <div className="space-y-4">
                                     <div>
@@ -174,7 +183,7 @@ export default function ResultPage({ data, onRestart }: ResultPageProps) {
                         </div>
 
                         <div className="mt-10">
-                            <h2 className="text-xl font-bold text-gray-800">우리가 마주한 현실입니다</h2>
+                            <h2 className="text-xl font-bold text-gray-800">미래 준비, 지금 당장 시작해야 합니다</h2>
                             <div className="mt-5 bg-gray-50 rounded-lg p-5">
                                 <p className="font-semibold text-center text-gray-800">가장 오래 일하지만, 가장 가난한 노후</p>
                                 <Bar options={oecdChartOptions} data={oecdChartData} />
@@ -185,28 +194,28 @@ export default function ResultPage({ data, onRestart }: ResultPageProps) {
                             </div>
                             <div className="mt-5 bg-gray-50 rounded-lg p-5">
                                 <p className="font-semibold text-center text-gray-800">기대할 수 없는 국민연금</p>
-                                <p className="text-sm text-center text-gray-500 mt-1">국민연금 월 수령액 분포</p>
+                                <p className="text-sm text-center text-gray-500 mt-1">전국민 국민연금 월 수령액 분포</p>
                                 <Bar options={pensionChartOptions} data={pensionChartData} plugins={[ChartDataLabels]} />
                                  <p className="text-gray-600 mt-4 leading-relaxed text-center">
-                                    국민연금만으로는 적정 생활비보다 <span className="font-bold text-red-500">월 100~200만원</span>이 부족합니다. 지금 준비하지 않으면, 길어진 노후는 축복이 아닐 수 있습니다.
+                                    국민연금, 생각보다 적습니다.<br />적정 생활비보다 <span className="font-bold text-red-500">월 100~200만원</span>이 부족합니다. 지금 준비하지 않으면, 길어진 노후는 축복이 아닐 수 있습니다.
                                 </p>
                                 <p className="text-xs text-gray-400 mt-2 text-right">출처: 국민연금관리공단 (2024)</p>
                             </div>
                         </div>
                         
                         <div className="mt-12">
-                            <h2 className="text-xl font-bold text-gray-800">그럼 어떻게 해야하죠?</h2>
+                            <h2 className="text-xl font-bold text-gray-800">걱정하지 마세요. 아직 늦지 않았습니다.</h2>
                             <div className="mt-4 bg-indigo-50 border-l-4 border-indigo-400 p-6 rounded-r-lg">
-                                <p className="font-bold text-lg text-indigo-700">괜찮아요! 우리에게는 '복리의 마법'이 있어요.</p>
-                                <p className="text-gray-700 mt-3 leading-relaxed">지금 당장 큰돈이 없어도 괜찮습니다. 하루라도 더 빨리 연금 투자를 시작하는 것이, 10년 뒤 더 많은 돈을 투자하는 것보다 훨씬 더 강력한 힘을 발휘합니다.</p>
+                                <p className="font-bold text-lg text-indigo-700">우리에게는 '복리의 마법'이 있어요.</p>
+                                <p className="text-gray-700 mt-3 leading-relaxed">지금 당장 큰돈이 없어도 괜찮습니다. 하루라도 더 빨리 조금씩 투자를 시작하는 것이, 10년 뒤 더 많은 돈을 투자하는 것보다 훨씬 더 강력한 힘을 발휘합니다.</p>
                                 <div className="mt-5 border-t border-indigo-200 pt-4">
-                                    <p className="text-gray-700 leading-relaxed">하지만 ISA, 연금저축, IRP... 이름만 들어도 머리 아프죠?</p>
-                                    <p className="font-bold text-gray-800 mt-2">저희 Refuture가 세제 혜택까지 모두 고려하여 당신에게 꼭 맞는 인생 계획을 세워드릴게요.</p>
+                                    <p className="text-gray-700 leading-relaxed">하지만 ISA, 연금저축, IRP... 이름만 들어도 머리 아프죠? 어렵고 귀찮아서 예적금만 쌓아두고 있지 않으신가요?</p>
+                                    <p className="font-bold text-gray-800 mt-2">Refuture가 세제 혜택까지 모두 고려하여 당신에게 꼭 맞는 인생 계획을 세워드릴게요.</p>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="mt-10">
+                        {/* <div className="mt-10">
                             <h2 className="text-xl font-bold text-gray-800">다음에 해당하면 집중하세요!</h2>
                             <div className="mt-4 space-y-3">
                                 <div className="bg-gray-100 rounded-lg p-4">
@@ -222,18 +231,18 @@ export default function ResultPage({ data, onRestart }: ResultPageProps) {
                                     <p className="text-gray-600 text-sm mt-1">"노후 준비를 시작해야 하는 건 알지만, 어디서부터 어떻게 시작해야 할지 막막하다."</p>
                                 </div>
                             </div>
-                        </div>
+                        </div> */}
 
                         <div className="mt-12">
-                            <h2 className="text-xl font-bold text-gray-800">걱정하지 마세요, Refuture가<br/>장기적인 자산 증식을 도와드릴게요</h2>
+                            <h2 className="text-xl font-bold text-gray-800">Refuture가<br/>장기적인 자산 증식을 도와드릴게요</h2>
                             <div className="space-y-4 mt-6">
                                 <div className="bg-white border border-gray-200 rounded-xl p-5">
                                     <h3 className="font-bold text-lg text-indigo-600">1. AI 금융 집사를 통한 습관 형성</h3>
-                                    <p className="text-gray-600 mt-2">월급날, AI가 저축액을 먼저 떼고 '이번 달에 써도 되는 돈'만 알려줘요. 더 이상 소비를 통제하려 애쓰지 않아도, 저축은 저절로 습관이 됩니다.</p>
+                                    <p className="text-gray-600 mt-2">월급날, AI가 소비 패턴과 미래 계획을 분석해 저축액을 먼저 떼고 '이번 달에 써도 되는 돈'만 알려줘요. 더 이상 소비를 통제하려 애쓰지 않아도, 저축은 저절로 습관이 됩니다.</p>
                                 </div>
                                 <div className="bg-white border border-gray-200 rounded-xl p-5">
                                     <h3 className="font-bold text-lg text-indigo-600">2. 목표에 맞춘 자동 투자</h3>
-                                    <p className="text-gray-600 mt-2">결혼, 내 집 마련, 은퇴 등 당신의 인생 목표에 맞춰 AI가 최적의 포트폴리오를 짜고 알아서 돈을 굴려줘요. 복잡한 투자는 Refuture에 맡기세요.</p>
+                                    <p className="text-gray-600 mt-2">결혼, 내 집 마련, 은퇴 등 당신의 인생 목표에 맞춰 AI가 최적의 포트폴리오를 짜고 알아서 합니다. 어렵고 귀찮은 일은 Refuture에 맡기세요.</p>
                                 </div>
                                  <div className="bg-white border border-gray-200 rounded-xl p-5">
                                     <h3 className="font-bold text-lg text-indigo-600">3. 살아있는 계획으로 최적화</h3>
@@ -243,8 +252,11 @@ export default function ResultPage({ data, onRestart }: ResultPageProps) {
                         </div>
 
                         <div className="mt-12 text-center pb-10">
-                            <a href="#" className="text-blue-600 hover:underline font-semibold mb-4 inline-block">
-                              자산 관리, Refuture와 함께 제대로 시작해보세요!
+                            <a href="#" className="text-blue-600 hover:underline font-semibold mb-4 inline-block h-14">
+                                <span key={animatedWordIndex} className="inline-block animate-[fade-in-down_0.5s_ease-out]">
+                                    {animatedWords[animatedWordIndex]}
+                                </span>
+                                , Refuture와 함께 시작해보세요!<br/>이메일을 남기면, 가장 먼저 받아볼 수 있어요.
                             </a>
                             <div className="flex items-center bg-white p-2 rounded-xl shadow-md">
                                 <input 
