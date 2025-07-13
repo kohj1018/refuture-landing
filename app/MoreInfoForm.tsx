@@ -9,6 +9,7 @@ interface MoreInfoFormProps {
   initialSavedMoney: string;
   onCurrentAgeChange: (value: string) => void;
   onSavedMoneyChange: (value: string) => void;
+  retirementAge: string;
 }
 
 function formatMoney(num: number) {
@@ -43,11 +44,23 @@ export default function MoreInfoForm({
   initialSavedMoney,
   onCurrentAgeChange,
   onSavedMoneyChange,
+  retirementAge,
 }: MoreInfoFormProps) {
   // 슬라이더 값
   const [currentAge, setCurrentAge] = useState(Number(initialCurrentAge) || 30);
   const [savedMoney, setSavedMoney] = useState(Number(initialSavedMoney) || 0);
   const [selectedRange, setSelectedRange] = useState<AssetRangeId>('range3');
+
+  // 희망 연금 수령 나이에서 1을 뺀 값을 현재 나이의 최대값으로 사용
+  const maxCurrentAge = Math.max(18, Number(retirementAge) - 1 || 80);
+
+  useEffect(() => {
+    // retirementAge가 바뀌었을 때 현재 나이가 max를 넘으면 max로 맞춤
+    if (currentAge > maxCurrentAge) {
+      setCurrentAge(maxCurrentAge);
+      onCurrentAgeChange(String(maxCurrentAge));
+    }
+  }, [retirementAge]);
 
   useEffect(() => {
     setCurrentAge(Number(initialCurrentAge) || 30);
@@ -145,7 +158,7 @@ export default function MoreInfoForm({
         <input
           type="range"
           min={18}
-          max={80}
+          max={maxCurrentAge}
           value={currentAge}
           onChange={handleAgeSlider}
           className="w-full accent-blue-500"

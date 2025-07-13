@@ -89,6 +89,7 @@ export default function Home() {
       initialSavedMoney={formData.savedMoney}
       onCurrentAgeChange={(val) => handleInputChange('currentAge', val)}
       onSavedMoneyChange={(val) => handleInputChange('savedMoney', val)}
+      retirementAge={formData.retirementAge} 
     />;
   }
 
